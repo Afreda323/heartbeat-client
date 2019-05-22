@@ -17,7 +17,7 @@ const AuthContext = createContext<IAuthContext>({
   isAuthenticated: () => false,
 })
 
-const AuthProvider: FC<any> = props => {
+const AuthProvider: FC = (props: any) => {
   const auth0 = new WebAuth({
     domain: process.env.REACT_APP_AUTH0_DOMAIN || '',
     clientID: process.env.REACT_APP_AUTH0_CLIENT_ID || '',
@@ -91,7 +91,12 @@ const AuthProvider: FC<any> = props => {
 
   return (
     <AuthContext.Provider
-      value={{ login, logout, isAuthenticated, handleAuthentication }}
+      value={{
+        login,
+        logout,
+        isAuthenticated,
+        handleAuthentication,
+      }}
       {...props}
     />
   )
