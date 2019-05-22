@@ -14,6 +14,7 @@
     "@typescript-eslint/parser": "1.6.0",
     "antd": "^3.18.2",
     "auth0": "^2.17.0",
+    "auth0-js": "^9.10.2",
     "axios": "^0.18.0",
     "babel-eslint": "10.0.1",
     "babel-jest": "^24.8.0",
@@ -80,7 +81,15 @@
       "airbnb"
     ],
     "rules": {
-      "react/jsx-filename-extension": [1, { "extensions": [".js", ".tsx"] }],
+      "react/jsx-filename-extension": [
+        1,
+        {
+          "extensions": [
+            ".js",
+            ".tsx"
+          ]
+        }
+      ],
       "semi": [
         2,
         "never"
@@ -166,6 +175,7 @@
   },
   "devDependencies": {
     "@types/auth0": "^2.9.14",
+    "@types/auth0-js": "^9.10.2",
     "@types/lodash": "^4.14.130",
     "@types/react-redux": "^7.0.9",
     "@types/react-router-dom": "^4.3.3",
