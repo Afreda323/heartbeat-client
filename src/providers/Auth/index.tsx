@@ -1,12 +1,22 @@
-import auth0 from 'auth0-js'
-import history from './history'
+import React, { createContext, useContext, FC } from 'react'
+import { WebAuth } from 'auth0-js'
+import noop from 'lodash/noop'
+import history from '../../services/history'
 
-/**
- * Auth service
- * Used for all auth0 related tasks
- */
-class Auth {
-  auth0 = new auth0.WebAuth({
+interface IAuthContext {
+  login: () => void
+  logout: () => void
+  isAuthenticated: () => boolean
+}
+
+const AuthContext = createContext<IAuthContext>({
+  login: noop,
+  logout: noop,
+  isAuthenticated: () => false,
+})
+
+const AuthProvider: FC<any> = (props) => {
+  const auth0 = new WebAuth({
     domain: process.env.REACT_APP_AUTH0_DOMAIN || '',
     clientID: process.env.REACT_APP_AUTH0_CLIENT_ID || '',
     redirectUri: process.env.REACT_APP_AUTH0_REDIRECT || '',
@@ -18,28 +28,15 @@ class Auth {
    * Login function
    * Brings up lock
    */
-  login = () => {
-    this.auth0.authorize()
-  }
-
-  /**
-   * On login, check hash and store values
-   */
-  handleAuthentication = () => {
-    this.auth0.parseHash((err, authResult) => {
-      if (authResult && authResult.accessToken && authResult.idToken) {
-        this.setSession(authResult)
-      } else if (err) {
-        console.log(err)
-      }
-    })
+  const login = () => {
+    auth0.authorize()
   }
 
   /**
    * Set login creds to local storage
    * @param authResult result of user logging in
    */
-  setSession = (authResult: auth0.Auth0DecodedHash) => {
+  const setSession = (authResult: auth0.Auth0DecodedHash) => {
     // Set the time that the Access Token will expire at
     if (authResult.expiresIn && authResult.accessToken && authResult.idToken) {
       const expiresAt = JSON.stringify(
@@ -54,10 +51,23 @@ class Auth {
   }
 
   /**
+   * On login, check hash and store values
+   */
+  const handleAuthentication = () => {
+    auth0.parseHash((err, authResult) => {
+      if (authResult && authResult.accessToken && authResult.idToken) {
+        setSession(authResult)
+      } else if (err) {
+        console.log(err)
+      }
+    })
+  }
+
+  /**
    * Log user out
    * Clears local storage auth vars
    */
-  logout = () => {
+  const logout = () => {
     // Clear Access Token and ID Token from local storage
     localStorage.removeItem('access_token')
     localStorage.removeItem('id_token')
@@ -67,15 +77,23 @@ class Auth {
   }
 
   /**
-   * Check if user does not have 
+   * Check if user does not have
    * an expired set of creds
    */
-  isAuthenticated = () => {
+  const isAuthenticated = () => {
     // Check whether the current time is past the
     // Access Token's expiry time
     const expiresAt = JSON.parse(localStorage.getItem('expires_at') || '0')
     return new Date().getTime() < expiresAt
   }
-}
 
-export default Auth
+  return (
+    <AuthContext.Provider
+      value={{ login, logout, isAuthenticated }}
+      {...props}
+    />
+  )
+}
+const useAuth = () => useContext(AuthContext)
+
+export { AuthProvider, useAuth }
