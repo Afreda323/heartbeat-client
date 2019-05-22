@@ -1,4 +1,5 @@
 import auth0 from 'auth0-js'
+import history from './history'
 
 /**
  * Auth service
@@ -47,6 +48,8 @@ class Auth {
       localStorage.setItem('access_token', authResult.accessToken)
       localStorage.setItem('id_token', authResult.idToken)
       localStorage.setItem('expires_at', expiresAt)
+
+      history.push('/app')
     }
   }
 
@@ -59,6 +62,8 @@ class Auth {
     localStorage.removeItem('access_token')
     localStorage.removeItem('id_token')
     localStorage.removeItem('expires_at')
+
+    history.push('/')
   }
 
   /**
