@@ -6,16 +6,18 @@ import history from '../../services/history'
 interface IAuthContext {
   login: () => void
   logout: () => void
+  handleAuthentication: () => void
   isAuthenticated: () => boolean
 }
 
 const AuthContext = createContext<IAuthContext>({
   login: noop,
   logout: noop,
+  handleAuthentication: noop,
   isAuthenticated: () => false,
 })
 
-const AuthProvider: FC<any> = (props) => {
+const AuthProvider: FC<any> = props => {
   const auth0 = new WebAuth({
     domain: process.env.REACT_APP_AUTH0_DOMAIN || '',
     clientID: process.env.REACT_APP_AUTH0_CLIENT_ID || '',
@@ -89,7 +91,7 @@ const AuthProvider: FC<any> = (props) => {
 
   return (
     <AuthContext.Provider
-      value={{ login, logout, isAuthenticated }}
+      value={{ login, logout, isAuthenticated, handleAuthentication }}
       {...props}
     />
   )
