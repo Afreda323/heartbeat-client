@@ -1,13 +1,18 @@
-import React, { createContext, useContext, FC } from 'react'
-import { WebAuth } from 'auth0-js'
+import React, {
+  createContext,
+  useContext,
+  FunctionComponent,
+  useState,
+} from 'react'
+import { WebAuth, Auth0UserProfile } from 'auth0-js'
 import noop from 'lodash/noop'
-import history from '../../services/history'
 
 interface IAuthContext {
   login: () => void
-  logout: () => void
-  handleAuthentication: () => void
+  logout: (cb: () => void) => void
+  handleAuthentication: (cb: () => void) => void
   isAuthenticated: () => boolean
+  getUser: () => any
 }
 
 const AuthContext = createContext<IAuthContext>({
@@ -15,16 +20,19 @@ const AuthContext = createContext<IAuthContext>({
   logout: noop,
   handleAuthentication: noop,
   isAuthenticated: () => false,
+  getUser: noop,
 })
 
-const AuthProvider: FC = (props: any) => {
+const AuthProvider: FunctionComponent = (props: any) => {
   const auth0 = new WebAuth({
     domain: process.env.REACT_APP_AUTH0_DOMAIN || '',
     clientID: process.env.REACT_APP_AUTH0_CLIENT_ID || '',
     redirectUri: process.env.REACT_APP_AUTH0_REDIRECT || '',
     responseType: 'token id_token',
-    scope: 'openid',
+    scope: 'openid profile',
   })
+
+  const [user, setUser] = useState<Auth0UserProfile | null>(null)
 
   /**
    * Login function
@@ -47,18 +55,35 @@ const AuthProvider: FC = (props: any) => {
       localStorage.setItem('access_token', authResult.accessToken)
       localStorage.setItem('id_token', authResult.idToken)
       localStorage.setItem('expires_at', expiresAt)
-
       window.location.href = '/app'
     }
   }
 
   /**
+   * User profile getter
+   */
+  const getUser = () => {
+    if (!user) {
+      auth0.client.userInfo(
+        localStorage.getItem('access_token') || '',
+        (err, userInfo) => {
+          if (!err) {
+            setUser(userInfo)
+          }
+        },
+      )
+    }
+    return user
+  }
+
+  /**
    * On login, check hash and store values
    */
-  const handleAuthentication = () => {
+  const handleAuthentication = (cb: () => void) => {
     auth0.parseHash((err, authResult) => {
       if (authResult && authResult.accessToken && authResult.idToken) {
         setSession(authResult)
+        cb()
       } else if (err) {
         console.log(err)
       }
@@ -69,13 +94,14 @@ const AuthProvider: FC = (props: any) => {
    * Log user out
    * Clears local storage auth vars
    */
-  const logout = () => {
+  const logout = (cb: () => void) => {
     // Clear Access Token and ID Token from local storage
+    setUser(null)
     localStorage.removeItem('access_token')
     localStorage.removeItem('id_token')
     localStorage.removeItem('expires_at')
 
-    window.location.href = '/'
+    cb()
   }
 
   /**
@@ -96,6 +122,7 @@ const AuthProvider: FC = (props: any) => {
         logout,
         isAuthenticated,
         handleAuthentication,
+        getUser,
       }}
       {...props}
     />

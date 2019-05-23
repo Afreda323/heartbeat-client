@@ -19,9 +19,9 @@ const Routes: FC = () => {
    * if they are, set session vals
    * @param nextState
    */
-  const handleAuthentication = (nextState: RouteProps) => {
+  const handleAuthentication = (nextState: RouteProps, cb: () => void) => {
     if (/access_token|id_token|error/.test(nextState.location.hash)) {
-      auth.handleAuthentication()
+      auth.handleAuthentication(cb)
     }
   }
   return (
@@ -32,7 +32,7 @@ const Routes: FC = () => {
         <Route
           path="/callback"
           render={(props: RouteProps) => {
-            handleAuthentication(props)
+            handleAuthentication(props, () => props.history.push('/app'))
             return <Callback {...props} />
           }}
         />
