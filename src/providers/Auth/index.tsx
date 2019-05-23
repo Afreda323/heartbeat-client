@@ -48,7 +48,7 @@ const AuthProvider: FC = (props: any) => {
       localStorage.setItem('id_token', authResult.idToken)
       localStorage.setItem('expires_at', expiresAt)
 
-      history.push('/app')
+      window.location.href = '/app'
     }
   }
 
@@ -75,7 +75,7 @@ const AuthProvider: FC = (props: any) => {
     localStorage.removeItem('id_token')
     localStorage.removeItem('expires_at')
 
-    history.push('/')
+    window.location.href = '/'
   }
 
   /**
